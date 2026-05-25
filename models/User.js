@@ -1,3 +1,4 @@
+const path = require('path');
 const { Model } = require('objection');
 
 class User extends Model {
@@ -8,17 +9,29 @@ class User extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: ['username', 'email', 'password'],
+            required: ['email', 'password'],
             properties: {
                 id:         { type: 'integer' },
-                username:   { type: 'string', minLength: 1, maxLength: 100 },
                 email:      { type: 'string', format: 'email', maxLength: 150 },
                 password:   { type: 'string', minLength: 6 },
-                created_at: { type: 'string' }
+                created_at: { type: 'string' },
+                updated_at: { type: 'string' }
             }
         };
     }
 
+    static get relationMappings() {
+        return {
+            userInfo: {
+                relation: Model.HasOneRelation,
+                modelClass: path.join(__dirname, 'UserInfo'),
+                join: {
+                    from: 'users.id',
+                    to: 'user_info.user_id'
+                }
+            }
+        };
+    }
 
     $formatJson(json) {
         json = super.$formatJson(json);

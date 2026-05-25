@@ -3,44 +3,72 @@ const { registerUser, loginUser } = require('../services/authService');
 const register = async (req, res) => {
     const { username, email, password } = req.body;
 
-    if (!username) return res.status(400).json({ message: "Username is required" });
-    if (!email)    return res.status(400).json({ message: "Email is required" });
-    if (!password) return res.status(400).json({ message: "Password is required" });
+    if (!username || !username.trim()) {
+        return res.status(400).json({ success: false, message: 'Username is required' });
+    }
+
+    if (!email || !email.trim()) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    if (!password || !password.trim()) {
+        return res.status(400).json({ success: false, message: 'Password is required' });
+    }
 
     try {
-        const result = await registerUser({ username, email, password });
-        res.status(201).json({
-            message: "User registered successfully",
-            ...result
+        const user = await registerUser({
+            email,
+            password,
+            userInfo: {
+                username
+            }
+        });
+
+        return res.status(201).json({
+            success: true,
+            message: 'User registered successfully',
+            data: { user }
         });
     } catch (error) {
-        if (error.name === 'ValidationError') {
-            return res.status(400).json({ message: error.message });
-        }
-        console.error(error);
-        res.status(error.statusCode || 500).json({ message: error.message || "Server error" });
+        console.error('Register error:', error.message);
+
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || 'Server error'
+        });
     }
 };
 
 const login = async (req, res) => {
     const { email, password } = req.body;
 
-    if (!email)    return res.status(400).json({ message: "Email is required" });
-    if (!password) return res.status(400).json({ message: "Password is required" });
+    if (!email || !email.trim()) {
+        return res.status(400).json({ success: false, message: 'Email is required' });
+    }
+
+    if (!password || !password.trim()) {
+        return res.status(400).json({ success: false, message: 'Password is required' });
+    }
 
     try {
         const result = await loginUser({ email, password });
-        res.json({
-            message: "Login successful",
-            ...result
+
+        return res.status(200).json({
+            success: true,
+            message: 'Login successful',
+            data: result
         });
     } catch (error) {
-        console.error(error);
-        res.status(error.statusCode || 500).json({ message: error.message || "Server error" });
+        console.error('Login error:', error.message);
+
+        return res.status(error.statusCode || 500).json({
+            success: false,
+            message: error.message || 'Server error'
+        });
     }
 };
 
-module.exports = { 
-    register, 
-    login 
+module.exports = {
+    register,
+    login
 };
