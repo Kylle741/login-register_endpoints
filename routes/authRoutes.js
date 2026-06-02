@@ -1,11 +1,15 @@
 const express = require('express');
-const router = express.Router();
-const { register, login } = require('../controllers/authController');
+const router  = express.Router();
+const {
+    register,
+    login,
+    verifyEmailHandler,
+    resendVerification
+} = require('../controllers/authController');
 
-// Register a user by splitting auth data and profile data across the two tables.
-router.post('/register', register);
-
-// Authenticate a user and return the related user_info record with the auth user.
-router.post('/login', login);
+router.post('/register',             register);
+router.post('/login',                login);
+router.get('/verify-email',          verifyEmailHandler);
+router.post('/resend-verification',  resendVerification);
 
 module.exports = router;
