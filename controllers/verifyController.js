@@ -3,41 +3,42 @@ const User = require('../models/User.js');
 const verifyEmail = async (req, res) => {
     try {
         const { token } = req.query;
+        const FRONTEND_URL = process.env.FRONTEND_URL;
 
         if (!token) {
-            return res.status(400).json({ message: 'Verification token is missing.' });
+            return res.redirect(`${FRONTEND_URL}/verify-email?status=missing`);
         }
 
-        // find the user with this token
         const user = await User.query().findOne({ verification_token: token });
 
         if (!user) {
-            return res.status(400).json({ message: 'Invalid or expired verification link.' });
+            return res.redirect(`${FRONTEND_URL}/verify-email?status=invalid`);
         }
 
-        // check if the token is expired
+        // Token is expired
         const now = new Date();
         if (now > new Date(user.verification_token_expires_at)) {
-            return res.status(400).json({ message: 'Verification link has expired. Please request a new one.' });
+            return res.redirect(`${FRONTEND_URL}/verify-email?status=expired`);
         }
 
-        // check if already verified
+        // Already verified
         if (user.is_verified) {
-            return res.status(400).json({ message: 'Email is already verified.' });
+            return res.redirect(`${FRONTEND_URL}/verify-email?status=already_verified`);
         }
 
-        // mark as verified and clear the token
+        // Mark as verified and clear token
         await User.query().patchAndFetchById(user.id, {
-            is_verified: true,
-            verification_token: null,
+            is_verified:                   true,
+            verification_token:            null,
             verification_token_expires_at: null,
         });
 
-        return res.status(200).json({ message: 'Email verified successfully! You can now log in.' });
+        // Redirect to login page with success flag
+        return res.redirect(`${FRONTEND_URL}/login?verified=true`);
 
     } catch (error) {
-        console.log('Verify error:', error);
-        return res.status(500).json({ message: 'Server error.' });
+        console.error('Verify error:', error);
+        return res.redirect(`${process.env.FRONTEND_URL}/verify-email?status=error`);
     }
 };
 
