@@ -1,5 +1,5 @@
 const nodemailer = require('nodemailer');
-const { verificationEmailTemplate } = require('../templates/verificationEmail');
+const { verificationEmailTemplate } = require('../template/verificationEmail');
 
 const transporter = nodemailer.createTransport({
     host:   process.env.SMTP_HOST,

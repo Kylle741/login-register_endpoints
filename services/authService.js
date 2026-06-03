@@ -6,7 +6,7 @@ const { sendVerificationEmail } = require('./mailService');
 
 const generateVerificationToken = () => ({
     token:     crypto.randomBytes(32).toString('hex'),
-    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000)
+    expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
 });
 
 const registerUser = async (email, password) => {
