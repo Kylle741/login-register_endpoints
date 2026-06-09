@@ -7,14 +7,23 @@ const {
 
 const register = async (req, res) => {
     try {
-        const { email, password } = req.body;
-        if (!email || !password)
-            return res.status(400).json({ message: 'Email and password are required.' });
+        const { first_name, middle_name, last_name, email, password, role } = req.body;
 
-        const user = await registerUser(email, password);
+        if (!first_name || !last_name || !email || !password)
+            return res.status(400).json({ message: 'First name, last name, email and password are required.' });
+
+        const user = await registerUser({ first_name, middle_name, last_name, email, password, role });
+
+        if (user.skipVerification) {
+            return res.status(201).json({
+                message: 'Registration successful. You can now log in.',
+                user: user.user
+            });
+        }
+
         return res.status(201).json({
             message: 'Registration successful. Please check your email to verify your account.',
-            user
+            user: user.user
         });
     } catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });

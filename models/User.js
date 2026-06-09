@@ -11,14 +11,13 @@ class User extends Model {
             type: 'object',
             required: ['email', 'password'],
             properties: {
-                id:                             { type: 'integer' },
-                email:                          { type: 'string', format: 'email', maxLength: 150 },
-                password:                       { type: 'string', minLength: 6 },
-                is_verified:                    { type: 'boolean' },
-                verification_token:             { type: ['string', 'null'] },
-                verification_token_expires_at:  { type: ['string', 'null'] },
-                created_at:                     { type: 'string' },
-                updated_at:                     { type: 'string' }
+                id:          { type: 'integer' },
+                email:       { type: 'string', format: 'email', maxLength: 150 },
+                password:    { type: 'string', minLength: 6 },
+                is_verified: { type: 'boolean' },
+                role_id:     { type: ['integer', 'null'] },
+                created_at:  { type: 'string' },
+                updated_at:  { type: 'string' }
             }
         };
     }
@@ -30,7 +29,23 @@ class User extends Model {
                 modelClass: path.join(__dirname, 'UserInfo'),
                 join: {
                     from: 'users.id',
-                    to: 'user_info.user_id'
+                    to:   'user_info.user_id'
+                }
+            },
+            emailVerification: {
+                relation: Model.HasOneRelation,
+                modelClass: path.join(__dirname, 'EmailVerification'),
+                join: {
+                    from: 'users.id',
+                    to:   'email_verifications.user_id'
+                }
+            },
+            role: {
+                relation: Model.BelongsToOneRelation,
+                modelClass: path.join(__dirname, 'Role'),
+                join: {
+                    from: 'users.role_id',
+                    to:   'roles.id'
                 }
             }
         };
@@ -39,8 +54,6 @@ class User extends Model {
     $formatJson(json) {
         json = super.$formatJson(json);
         delete json.password;
-        delete json.verification_token;
-        delete json.verification_token_expires_at;
         return json;
     }
 }

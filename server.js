@@ -6,14 +6,14 @@ dotenv.config();
 require('./config/db');
 
 const authRoutes = require('./routes/authRoutes');
-const { startVerificationCron } = require('./services/verificationCron'); // line 1 added
+const { startVerificationCron } = require('./services/verificationCron');
 
 const app = express();
 app.use(express.json());
 
 app.use('/auth', authRoutes);
 
-startVerificationCron(); // line 2 added
+startVerificationCron();
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

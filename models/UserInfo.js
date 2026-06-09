@@ -9,13 +9,15 @@ class UserInfo extends Model {
     static get jsonSchema() {
         return {
             type: 'object',
-            required: [ 'username'],
+            required: ['first_name', 'last_name'],
             properties: {
-                id:         { type: 'integer' },
-                user_id:    { type: 'integer' },
-                username:   { type: 'string', minLength: 1, maxLength: 100 },
-                created_at: { type: 'string' },
-                updated_at: { type: 'string' }
+                id:          { type: 'integer' },
+                user_id:     { type: 'integer' },
+                first_name:  { type: 'string', minLength: 1, maxLength: 100 },
+                middle_name: { type: ['string', 'null'], maxLength: 100 },
+                last_name:   { type: 'string', minLength: 1, maxLength: 100 },
+                created_at:  { type: 'string' },
+                updated_at:  { type: 'string' }
             }
         };
     }
@@ -27,7 +29,7 @@ class UserInfo extends Model {
                 modelClass: path.join(__dirname, 'User'),
                 join: {
                     from: 'user_info.user_id',
-                    to: 'users.id'
+                    to:   'users.id'
                 }
             }
         };

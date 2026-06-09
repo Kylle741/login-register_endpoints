@@ -1,7 +1,8 @@
-const cron = require('node-cron');
-const User = require('../models/User');
+const cron              = require('node-cron');
+const User              = require('../models/User');
+const EmailVerification = require('../models/EmailVerification');
 const { sendVerificationEmail } = require('./mailService');
-const crypto = require('crypto');
+const crypto            = require('crypto');
 
 const generateVerificationToken = () => ({
     token:     crypto.randomBytes(32).toString('hex'),
@@ -12,26 +13,33 @@ const resendExpiredVerifications = async () => {
     console.log('[cron] Checking for unverified users with expired tokens...');
 
     try {
-        const expiredUsers = await User.query()
-            .where('is_verified', false)
-            .whereNotNull('verification_token_expires_at')
-            .where('verification_token_expires_at', '<', new Date().toISOString())
-            .withGraphFetched('userInfo');
+        const expiredVerifications = await EmailVerification.query()
+            .where('expires_at', '<', new Date().toISOString())
+            .withGraphFetched('user.userInfo');
 
-        if (expiredUsers.length === 0) {
+        if (expiredVerifications.length === 0) {
             console.log('[cron] No expired unverified users found.');
             return;
         }
 
-        console.log(`[cron] Found ${expiredUsers.length} unverified user(s). Resending...`);
+        console.log(`[cron] Found ${expiredVerifications.length} unverified user(s). Resending...`);
 
-        for (const user of expiredUsers) {
+        for (const verification of expiredVerifications) {
             try {
+                const user = verification.user;
+
+                // Skip if already verified
+                if (user.is_verified) {
+                    await EmailVerification.query().deleteById(verification.id);
+                    continue;
+                }
+
                 const { token, expiresAt } = generateVerificationToken();
 
-                await User.query().patchAndFetchById(user.id, {
-                    verification_token:            token,
-                    verification_token_expires_at: expiresAt
+                // Replace old token with new one
+                await EmailVerification.query().patchAndFetchById(verification.id, {
+                    token,
+                    expires_at: expiresAt,
                 });
 
                 const username = user.userInfo?.username || user.email.split('@')[0];
@@ -39,7 +47,7 @@ const resendExpiredVerifications = async () => {
 
                 console.log(`[cron] Resent verification to: ${user.email}`);
             } catch (err) {
-                console.error(`[cron] Failed to resend for ${user.email}:`, err.message);
+                console.error(`[cron] Failed to resend for ${verification.user?.email}:`, err.message);
             }
         }
 
