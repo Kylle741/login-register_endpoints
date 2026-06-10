@@ -34,7 +34,8 @@ const verifyEmail = async (req, res) => {
 
         return res.status(200).send(verifyEmailPage('success', 'Your email has been verified! You can now log in.'));
 
-    } catch (error) {
+    } 
+    catch (error) {
         console.error('Verify error:', error);
         return res.status(500).send(verifyEmailPage('error', 'Something went wrong. Please try again later.'));
     }

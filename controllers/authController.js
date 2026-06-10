@@ -9,8 +9,21 @@ const register = async (req, res) => {
     try {
         const { first_name, middle_name, last_name, email, password, role } = req.body;
 
-        if (!first_name || !last_name || !email || !password)
-            return res.status(400).json({ message: 'First name, last name, email and password are required.' });
+        if (!first_name || !first_name.trim())
+            return res.status(400).json({ message: 'First name is required.' });
+
+        if (!last_name || !last_name.trim())
+            return res.status(400).json({ message: 'Last name is required.' });
+
+        if (!email)
+            return res.status(400).json({ message: 'Email is required.' });
+
+        if (!password)
+            return res.status(400).json({ message: 'Password is required.' });
+
+        // Role is now required — no silent default
+        if (!role)
+            return res.status(400).json({ message: 'Role is required.' });
 
         const user = await registerUser({ first_name, middle_name, last_name, email, password, role });
 
@@ -25,7 +38,8 @@ const register = async (req, res) => {
             message: 'Registration successful. Please check your email to verify your account.',
             user: user.user
         });
-    } catch (error) {
+    } 
+    catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });
     }
 };
@@ -38,7 +52,8 @@ const login = async (req, res) => {
 
         const token = await loginUser(email, password);
         return res.status(200).json({ message: 'Login successful.', token });
-    } catch (error) {
+    } 
+    catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });
     }
 };
@@ -51,7 +66,8 @@ const verifyEmailHandler = async (req, res) => {
 
         await verifyEmail(token);
         return res.status(200).json({ message: 'Email verified successfully. You can now log in.' });
-    } catch (error) {
+    } 
+    catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });
     }
 };
@@ -66,9 +82,15 @@ const resendVerification = async (req, res) => {
         return res.status(200).json({
             message: 'If this email exists and is unverified, a new verification link has been sent.'
         });
-    } catch (error) {
+    } 
+    catch (error) {
         return res.status(error.statusCode || 500).json({ message: error.message });
     }
 };
 
-module.exports = { register, login, verifyEmailHandler, resendVerification };
+module.exports = {
+    register,
+    login,
+    verifyEmailHandler,
+    resendVerification
+};

@@ -21,7 +21,8 @@ const registerUser = async ({ first_name, middle_name, last_name, email, passwor
         throw error;
     }
 
-    const roleName = role || 'member';
+    // Removed `role || 'member'` default — role is now required
+    const roleName = role;
     if (!VALID_ROLES.includes(roleName)) {
         const error = new Error(`Invalid role. Must be one of: ${VALID_ROLES.join(', ')}`);
         error.statusCode = 400;
